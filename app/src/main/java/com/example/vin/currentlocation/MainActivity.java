@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private final int LOCATION_PERMISSION = 1001;
     private final int REQUEST_CHECK_SETTINGS = 10001;
     private Button getLocation;
-    private LocationCallback mLocationCallback = mLocationCallback = new LocationCallback() {
+    private LocationCallback mLocationCallback = new LocationCallback() {
         @Override
         public void onLocationResult(LocationResult locationResult) {
             if (locationResult == null) {
@@ -44,7 +44,8 @@ public class MainActivity extends AppCompatActivity {
             }
             for (Location location : locationResult.getLocations()) {
                 // Update UI with location data
-                Toast.makeText(MainActivity.this, "Lat :" + location.getLatitude() + " Long :" + location.getLongitude(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Lat :" + location.getLatitude() + " Long :"
+                        + location.getLongitude(), Toast.LENGTH_SHORT).show();
                 mFusedLocationClient.removeLocationUpdates(mLocationCallback);
             }
         }
@@ -57,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         getLocation =  findViewById(R.id.get_location);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-       getLocation.setOnClickListener(new View.OnClickListener() {
+        getLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 getLocation();
@@ -68,7 +69,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this) == ConnectionResult.SUCCESS) {
+        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this)
+                == ConnectionResult.SUCCESS) {
 //            Toast.makeText(this, "Play available!", Toast.LENGTH_SHORT).show();
 
         }else{
@@ -77,8 +79,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getLocation() {
-        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION);
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}
+            , LOCATION_PERMISSION);
             return;
         }
         mFusedLocationClient.getLastLocation()
@@ -87,7 +91,8 @@ public class MainActivity extends AppCompatActivity {
                     public void onSuccess(Location location) {
                         // Got last known location. In some rare situations this can be null.
                         if (location != null) {
-                            Toast.makeText(MainActivity.this, location.getLatitude() + " " + location.getLongitude(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, location.getLatitude() + " "
+                                    + location.getLongitude(), Toast.LENGTH_SHORT).show();
                         } else {
                             createAndCheckLocationRequest();
                         }
@@ -96,7 +101,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode
+            , @NonNull String[] permissions
+            , @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case LOCATION_PERMISSION: {
@@ -148,8 +155,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void requestLocationUpdate() {
-        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION);
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}
+            , LOCATION_PERMISSION);
         }
         mFusedLocationClient.requestLocationUpdates(mLocationRequest,
                 mLocationCallback,
