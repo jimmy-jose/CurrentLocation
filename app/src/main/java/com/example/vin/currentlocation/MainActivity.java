@@ -7,8 +7,11 @@ import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.ResultReceiver;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -36,6 +39,10 @@ public class MainActivity extends AppCompatActivity {
     private final int LOCATION_PERMISSION = 1001;
     private final int REQUEST_CHECK_SETTINGS = 10001;
     private Button getLocation;
+    private Location mLastLocation;
+    private AddressResultReceiver mResultReceiver;
+    private TextView address;
+
     private LocationCallback mLocationCallback = new LocationCallback() {
         @Override
         public void onLocationResult(LocationResult locationResult) {
@@ -44,9 +51,11 @@ public class MainActivity extends AppCompatActivity {
             }
             for (Location location : locationResult.getLocations()) {
                 // Update UI with location data
+                mLastLocation = location;
                 Toast.makeText(MainActivity.this, "Lat :" + location.getLatitude() + " Long :"
                         + location.getLongitude(), Toast.LENGTH_SHORT).show();
                 mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+                startIntentService();
             }
         }
     };
@@ -57,6 +66,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getLocation =  findViewById(R.id.get_location);
+        address = findViewById(R.id.address);
+        mResultReceiver = new AddressResultReceiver(null);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         getLocation.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -91,8 +102,10 @@ public class MainActivity extends AppCompatActivity {
                     public void onSuccess(Location location) {
                         // Got last known location. In some rare situations this can be null.
                         if (location != null) {
+                            mLastLocation = location;
                             Toast.makeText(MainActivity.this, location.getLatitude() + " "
                                     + location.getLongitude(), Toast.LENGTH_SHORT).show();
+                            startIntentService();
                         } else {
                             createAndCheckLocationRequest();
                         }
@@ -176,4 +189,44 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    private void startIntentService() {
+        Intent intent = new Intent(this, FetchAddressIntentService.class);
+        intent.putExtra(Constants.RECEIVER, mResultReceiver);
+        intent.putExtra(Constants.LOCATION_DATA_EXTRA, mLastLocation);
+        startService(intent);
+    }
+
+    private void displayAddressOutput(final String addressText){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                address.setText(addressText);
+            }
+        });
+    }
+
+    class AddressResultReceiver extends ResultReceiver {
+        public AddressResultReceiver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+
+            if (resultData == null) {
+                return;
+            }
+
+            // Display the address string
+            // or an error message sent from the intent service.
+            String mAddressOutput = resultData.getString(Constants.RESULT_DATA_KEY);
+            if (mAddressOutput == null) {
+                mAddressOutput = "";
+            }
+            displayAddressOutput(mAddressOutput);
+        }
+    }
+
+
 }
